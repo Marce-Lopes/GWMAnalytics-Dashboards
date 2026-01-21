@@ -7,5 +7,10 @@ services:
     restart: on-failure
     environment:
       - TZ=America/Sao_Paulo
-    # volumes:
-    #   - ./:/app
+    command: >
+      streamlit run app.py
+      --server.port=8501
+      --server.address=0.0.0.0
+      --server.baseUrlPath=ecommerce_pocket_report
+      --server.enableCORS=false
+      --server.enableXsrfProtection=false
