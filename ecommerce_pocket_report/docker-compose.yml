@@ -12,5 +12,3 @@ services:
       --server.port=8501
       --server.address=0.0.0.0
       --server.baseUrlPath=ecommerce_pocket_report
-      --server.enableCORS=false
-      --server.enableXsrfProtection=false
