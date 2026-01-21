@@ -4,7 +4,7 @@ services:
     container_name: gwm-pocket-report
     ports:
       - "8501:8501"
-    restart: "no"
+    restart: on-failure
     environment:
       - TZ=America/Sao_Paulo
     # volumes:
