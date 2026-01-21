@@ -39,7 +39,7 @@ if 'username' not in st.session_state:
 
 # Load page icon
 try:
-    icon_path = r"C:\Users\61000453\Documents\rio_pmo_project\retencao\analytics.png"
+    icon_path = "analytics.png"
     page_icon = Image.open(icon_path)
 except Exception:
     page_icon = "🚗"
@@ -281,3 +281,4 @@ def main():
 
 if __name__ == "__main__":
     main()
+
