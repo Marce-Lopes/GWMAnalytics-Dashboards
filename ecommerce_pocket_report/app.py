@@ -77,7 +77,7 @@ def main():
     
     with col_center:
         # Load and display image
-        img_path = r"C:\Users\61000453\Documents\rio_pmo_project\retencao\analytics.png"
+        img_path = "analytics.png"
         img_base64 = get_base64_image(img_path)
         
         if img_base64:
@@ -281,4 +281,5 @@ def main():
 
 if __name__ == "__main__":
     main()
+
 
