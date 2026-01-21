@@ -169,7 +169,7 @@ def show_login_page():
     col1, col2, col3 = st.columns([1, 2, 1])
     with col2:
         # Load and display image for login
-        img_path = r"C:\Users\61000453\Documents\rio_pmo_project\retencao\analytics.png"
+        img_path = "analytics.png"
         img_base64 = get_base64_image(img_path)
         
         # Display Logo
