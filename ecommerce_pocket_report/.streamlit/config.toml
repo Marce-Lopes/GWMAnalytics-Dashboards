@@ -1,0 +1,6 @@
+[server]
+port = 8501
+baseUrlPath = "ecommerce_pocket_report"
+enableCORS = false
+enableXsrfProtection = false
+headless = true
