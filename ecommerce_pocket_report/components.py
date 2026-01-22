@@ -5,28 +5,31 @@ from utils import format_number, get_base64_image
 from charts import render_comparison_chart
 from styles import get_login_styles
 
-def create_html_table(headers, rows, max_height=None, show_header=True):
+def create_html_table(headers, rows, max_height=None, show_header=True, highlight_indices=None):
     """
-    Helper function to create a consistent HTML table with luxury styling.
+    Helper function to create a consistent HTML table with grid styling.
     headers: list of column names
     rows: list of lists/tuples containing cell values
     max_height: optional string (e.g., '300px') to enable vertical scrolling
     show_header: boolean, whether to display the table header
+    highlight_indices: list of row indices (0-based) to highlight in yellow
     """
     scroll_style = f"max-height: {max_height}; overflow-y: auto;" if max_height else "overflow: hidden;"
+    if highlight_indices is None:
+        highlight_indices = []
     
     html = f"""
-<div style="width: 100%; {scroll_style} border-radius: 8px;">
-    <table style="width:100%; border-collapse: separate; border-spacing: 0; font-family: 'Montserrat', sans-serif;">
+<div style="width: 100%; {scroll_style} border: 1px solid #E2E8F0; border-top: none; border-radius: 0 0 8px 8px; background: #FFFFFF;">
+    <table style="width:100%; border-collapse: collapse; border-spacing: 0; font-family: 'Montserrat', sans-serif;">
 """
     if show_header:
-        html += """      <thead style="position: sticky; top: 0; background-color: #FFFFFF; z-index: 1;">
+        html += """      <thead style="position: sticky; top: 0; background-color: #000000; z-index: 1;">
         <tr>
 """
         for i, header in enumerate(headers):
             # Assume last column is numeric/right-aligned, others left-aligned
             align = "right" if i == len(headers) - 1 else "left"
-            html += f'          <th style="text-align: {align};">{header}</th>\n'
+            html += f'          <th style="text-align: {align}; color: #FFFFFF; background-color: #000000; padding: 8px; font-weight: bold; text-transform: uppercase; font-size: 0.8rem;">{header}</th>\n'
         
         html += """        </tr>
       </thead>
@@ -35,11 +38,14 @@ def create_html_table(headers, rows, max_height=None, show_header=True):
     html += """      <tbody>
 """
     
-    for row in rows:
-        html += '        <tr>\n'
+    for idx, row in enumerate(rows):
+        bg_color = "#FFD700" if idx in highlight_indices else "#FFFFFF" # Yellow for highlight, White for normal
+        html += f'        <tr style="background-color: {bg_color} !important;">\n'
         for i, val in enumerate(row):
             align = "right" if i == len(row) - 1 else "left"
-            html += f'          <td style="text-align: {align}; font-variant-numeric: tabular-nums;">{val}</td>\n'
+            # Remove border-bottom for the last row to create a seamless card look
+            border_style = "border-bottom: 1px solid #F1F5F9;" if idx < len(rows) - 1 else ""
+            html += f'          <td style="text-align: {align}; font-variant-numeric: tabular-nums; {border_style} padding: 8px; color: #000000; font-size: 13px;">{val}</td>\n'
         html += '        </tr>\n'
         
     html += """      </tbody>
@@ -81,7 +87,8 @@ def render_summary_html(model_name, summary_data):
     
     # Create rows for helper function
     rows = list(zip(metrics, values))
-    return create_html_table(['Metric', 'Value'], rows, show_header=False)
+    # Highlight rows 1 and 2 (0-based) which correspond to '9k form with payment' and '9k last 24 hours'
+    return create_html_table(['Metric', 'Value'], rows, show_header=False, highlight_indices=[1, 2])
 
 
 def render_color_table(model_name, color_data):
@@ -155,8 +162,8 @@ def render_model_header_and_summary(model_name, summary_data):
     
     # Combine into a single HTML block to avoid Streamlit container fragmentation
     # IMPORTANT: Keep HTML flush left to avoid Markdown code block interpretation
-    full_html = f"""<div class="summary-card" style="height: 220px; display: flex; flex-direction: column;">
-<div class="model-header" style="margin-bottom: 0.5rem;">{model_name}</div>
+    full_html = f"""<div class="summary-card" style="display: flex; flex-direction: column;">
+<div class="model-header">{model_name}</div>
 {summary_html}
 </div>"""
     st.markdown(full_html, unsafe_allow_html=True)
