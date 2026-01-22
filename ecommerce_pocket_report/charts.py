@@ -34,9 +34,9 @@ def render_daily_chart(model_name, daily_data):
         df['date'] = pd.to_datetime(df['date'])
         df = df.sort_values('date')
 
-    # Use luxury gold/navy theme
-    line_color = '#09124F'  # New Dark Blue
-    marker_color = '#FFFFFF' # White for contrast
+    # Use Excel Grid Theme
+    line_color = '#0000FF'  # Pure Blue
+    marker_color = '#000000' # Black
     
     fig = go.Figure()
     fig.add_trace(go.Scatter(
@@ -44,35 +44,45 @@ def render_daily_chart(model_name, daily_data):
         y=df['value'],
         mode='lines+markers',
         name=model_name,
-        line=dict(width=2, color=line_color),
+        line=dict(width=2, color=line_color, shape='spline'), # Smooth line
         marker=dict(size=4, color=marker_color, line=dict(width=1, color=line_color))
     ))
     
     fig.update_layout(
-        xaxis_title="Date",
-        yaxis_title="Value",
+        title={'text': '', 'font': {'size': 1}}, # Explicitly empty title to avoid "undefined"
+        xaxis_title=None,
+        yaxis_title=None,
         height=200,
-        margin=dict(l=40, r=20, t=10, b=60),
-        font=dict(family='Montserrat', size=9, color='#64748B'),
-        plot_bgcolor='rgba(0,0,0,0)',
+        margin=dict(l=0, r=0, t=10, b=25), # Zero side margins, minimal top/bottom
+        font=dict(family='Montserrat', size=9, color='#000000'),
+        plot_bgcolor='rgba(255,255,255,1)',
         paper_bgcolor='rgba(0,0,0,0)',
         showlegend=False,
         xaxis=dict(
             tickformat='%d-%m',
             tickangle=-45,
-            tickfont=dict(size=8),
-            showgrid=False,
-            showline=True,
-            linecolor='#E2E8F0'
+            tickfont=dict(size=8, color='#000000'),
+            showgrid=False, # Remove gridlines
+            gridcolor='#E0E0E0',
+            showline=False,
+            linecolor='#000000',
+            automargin=True # Allow label space but keep it tight
         ),
         yaxis=dict(
-            visible=False, # Hide Y Axis
-            showgrid=False,
-            zeroline=False
+            visible=True, 
+            showticklabels=False, 
+            showgrid=False, # Remove gridlines
+            gridcolor='#E0E0E0',
+            zeroline=True,
+            zerolinecolor='#000000',
+            tickfont=dict(size=8, color='#000000'),
+            showline=False,
+            linecolor='#000000',
+            automargin=False # Don't reserve space for hidden labels
         ),
         hovermode='x unified', # Enhanced hover
         # Make chart responsive
-        autosize=True
+        autosize=False
     )
     
     return fig
@@ -172,8 +182,8 @@ def render_comparison_chart(vehicle_name, month_a, month_b, family_name, status_
         y=df_plot[f'Month A ({month_a})'],
         mode='lines+markers',
         name=f'Month A: {month_a}',
-        line=dict(width=3, color='#09124F'), # Dark Blue
-        marker=dict(size=6, color='#09124F', line=dict(width=1, color='white')),
+        line=dict(width=3, color='#0000FF'), # Pure Blue
+        marker=dict(size=6, color='#0000FF', line=dict(width=1, color='white')),
         connectgaps=True 
     ))
     
@@ -183,8 +193,8 @@ def render_comparison_chart(vehicle_name, month_a, month_b, family_name, status_
         y=df_plot[f'Month B ({month_b})'],
         mode='lines+markers',
         name=f'Month B: {month_b}',
-        line=dict(width=3, color='#0C2AFD', dash='dot'), # Bright Blue Dotted
-        marker=dict(size=6, color='#0C2AFD', line=dict(width=1, color='white')),
+        line=dict(width=3, color='#000000', dash='dot'), # Black Dotted for contrast
+        marker=dict(size=6, color='#000000', line=dict(width=1, color='white')),
         connectgaps=True
     ))
     
@@ -195,14 +205,14 @@ def render_comparison_chart(vehicle_name, month_a, month_b, family_name, status_
             'x': 0.5,
             'xanchor': 'center',
             'yanchor': 'top',
-            'font': dict(family='Montserrat', size=14, color='#0F172A')
+            'font': dict(family='Montserrat', size=14, color='#000000')
         },
         xaxis_title=x_label,
         yaxis_title="Orders",
         height=400,
         margin=dict(l=40, r=20, t=60, b=60),
-        font=dict(family='Montserrat', size=10, color='#64748B'),
-        plot_bgcolor='rgba(0,0,0,0)',
+        font=dict(family='Montserrat', size=10, color='#000000'),
+        plot_bgcolor='rgba(255,255,255,1)',
         paper_bgcolor='rgba(0,0,0,0)',
         legend=dict(
             orientation="h",
@@ -210,17 +220,22 @@ def render_comparison_chart(vehicle_name, month_a, month_b, family_name, status_
             y=1.02,
             xanchor="right",
             x=1,
-            font=dict(family='Montserrat', size=10, color='#0F172A')
+            font=dict(family='Montserrat', size=10, color='#000000')
         ),
         xaxis=dict(
-            showgrid=False,
+            showgrid=True,
+            gridcolor='#E0E0E0',
             showline=True,
-            linecolor='#E2E8F0'
+            linecolor='#000000',
+            tickfont=dict(color='#000000')
         ),
         yaxis=dict(
             showgrid=True,
-            gridcolor='#F1F5F9',
-            zeroline=False
+            gridcolor='#E0E0E0',
+            zeroline=True,
+            zerolinecolor='#000000',
+            tickfont=dict(color='#000000'),
+            linecolor='#000000'
         ),
         autosize=True
     )
@@ -267,10 +282,10 @@ def render_state_map(model_name, state_data):
     # Note: For a full choropleth map, GeoJSON data for Brazil states would be needed
     fig = go.Figure()
     
-    # Custom Gradient Scale from #0C2AFD to #09124F
+    # Custom Gradient Scale from Blue to Dark Blue
     custom_colorscale = [
-        [0.0, '#0C2AFD'],
-        [1.0, '#09124F']
+        [0.0, '#6699FF'],
+        [1.0, '#0000FF']
     ]
     
     fig.add_trace(go.Bar(
@@ -281,22 +296,27 @@ def render_state_map(model_name, state_data):
             color=df_sorted['value'],
             colorscale=custom_colorscale, # Custom Gradient
             showscale=False, # Hide scale for cleaner look
-            # colorbar=dict(title="Value", len=0.5)
+            line=dict(color='#000000', width=1) # Black border
         ),
         text=df_sorted['value'],
         textposition='outside',
-        textfont=dict(family='Montserrat', color='#09124F', size=14) # Increased size
+        textfont=dict(family='Montserrat', color='#000000', size=14) # Increased size
     ))
     
     fig.update_layout(
         height=350, # Increased height
         margin=dict(l=100, r=20, t=10, b=40), # Reduced top margin as title is external
-        font=dict(family='Montserrat', size=9, color='#64748B'),
+        font=dict(family='Montserrat', size=9, color='#000000'),
         xaxis_title="",
         yaxis_title="",
-        yaxis=dict(autorange="reversed"),  # Reverse to show highest on top
-        xaxis=dict(visible=False), # Hide X Axis
-        plot_bgcolor='rgba(0,0,0,0)',
+        yaxis=dict(
+            autorange="reversed", 
+            tickfont=dict(color='#000000')
+        ),  # Reverse to show highest on top
+        xaxis=dict(
+            visible=False
+        ), # Hide X Axis
+        plot_bgcolor='rgba(255,255,255,1)',
         paper_bgcolor='rgba(0,0,0,0)',
         # Make chart responsive
         autosize=True

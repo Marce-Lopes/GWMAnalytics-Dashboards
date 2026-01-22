@@ -17,7 +17,7 @@ def get_main_styles():
         /* -------------------------------------------------------------------------- */
         
         /* Font Import */
-        @import url('https://fonts.googleapis.com/css2?family=Montserrat:wght@300;400;600&display=swap');
+        @import url('https://fonts.googleapis.com/css2?family=Montserrat:wght@300;400;500;600&display=swap');
         
         /* General Settings */
         html, body, [class*="css"] {
@@ -35,12 +35,8 @@ def get_main_styles():
         /* -------------------------------------------------------------------------- */
         
         /* Cards (Metrics, Tables) */
-        .model-header, .stMarkdown div[data-testid="stMarkdownContainer"] table {
-            background: #FFFFFF !important;
-            border: 1px solid #E2E8F0 !important;
-            border-radius: 12px !important;
-            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05) !important;
-            padding: 1rem !important;
+        .model-header {
+            /* Kept for reference but specific styles are below */
         }
 
         .summary-card {
@@ -50,63 +46,90 @@ def get_main_styles():
             padding: 0 !important;
         }
 
-        /* Reset styles for tables inside summary-card to avoid double borders */
-        .summary-card table {
-            /* Re-apply border to table since we removed card border */
-            border: 1px solid #E2E8F0 !important;
-            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05) !important;
-            background: #FFFFFF !important;
-            padding: 1rem !important;
-            border-radius: 12px !important;
-        }
         
+        /* Block Styling - Grouping all info for one vehicle */
+        .vehicle-block {
+            background-color: #FFFFFF;
+            /* border-radius: 16px; */ /* Removed for grid look */
+            /* padding: 1rem; */       /* Removed to let grid touch edges */
+            /* box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05); */
+            /* border: 1px solid #E2E8F0; */
+            height: 100%; 
+        }
+
         /* Model Header Specifics */
         .model-header {
-            background: linear-gradient(135deg, #0B5ED7 0%, #1D4ED8 100%) !important;
+            font-family: 'Montserrat', sans-serif !important;
+            background: #2C2C2C !important; /* Premium Dark Grey */
             color: #FFFFFF !important;
             text-transform: uppercase;
             letter-spacing: 1px;
-            border: none !important;
+            border: none !important; /* No border */
             font-size: 1rem !important;
-            padding: 0.8rem !important;
+            padding: 0.5rem !important;
+            border-radius: 8px 8px 0 0 !important; /* Rounded top */
+            text-align: center !important;
+            font-weight: 500 !important; /* Medium weight for lighter feel */
+            margin-bottom: 0 !important; /* No gap below */
         }
 
         /* Standard Chart Header */
         .chart-header {
             font-family: 'Montserrat', sans-serif !important;
-            font-weight: bold !important;
-            color: #0F172A !important;
+            font-weight: 500 !important; /* Medium weight for lighter feel */
+            background: #2C2C2C !important; /* Premium Dark Grey */
+            color: #FFFFFF !important;
             text-align: center !important;
-            margin-bottom: 5px !important;
-            margin-top: 5px !important;
+            margin-bottom: 0px !important; /* No gap below */
+            margin-top: 0px !important;
+            border: none !important; /* No border */
+            padding: 0.5rem !important;
+            font-size: 0.95rem !important; /* Slightly smaller than model header */
+            border-radius: 8px 8px 0 0 !important; /* Rounded top */
+            text-transform: uppercase;
+            letter-spacing: 1px;
         }
         
         /* Tables */
         .dataframe, table {
             width: 100% !important;
-            border-collapse: separate !important; 
+            border-collapse: collapse !important; /* Collapse borders */
             border-spacing: 0 !important;
-            border: none !important;
+            border: none !important; /* No outer border */
             font-family: 'Montserrat', sans-serif !important;
-            font-size: 14px !important; /* Base size */
+            font-size: 13px !important;
         }
         
         table th {
-            background-color: transparent !important;
-            color: #64748B !important; /* Slate 500 */
+            background-color: #000000 !important; /* Black Header */
+            color: #FFFFFF !important; /* White Text */
             font-weight: 600 !important;
             text-transform: uppercase !important;
-            font-size: 0.85rem !important; /* Increased from 0.75rem */
+            font-size: 0.8rem !important;
             letter-spacing: 0.05em !important;
-            border: none !important; /* Removed borders */
-            padding: 4px !important;
+            border: none !important; 
+            padding: 8px !important;
         }
         
         table td {
-            font-size: 0.95rem !important; /* Increased for readability */
-            color: #334155 !important;
-            padding: 4px !important;
-            border-bottom: 1px solid #F1F5F9 !important;
+            border: none !important; 
+            border-bottom: 1px solid #F1F5F9 !important; /* Light divider */
+            color: #000000 !important;
+            padding: 8px !important;
+        }
+
+        /* Chart Container Styling */
+        div[data-testid="stPlotlyChart"] {
+            border: 1px solid #E2E8F0;
+            border-top: none; /* Header has border */
+            background-color: #FFFFFF;
+            border-radius: 0 0 8px 8px; /* Rounded bottom */
+            /* Removed box-shadow to avoid "table over table" look */
+        }
+        
+        /* Ensure the chart header connects to the chart */
+        .chart-header {
+            border-bottom: 2px solid #000000 !important; /* Ensure separation or connection? Grid usually has borders everywhere */
         }
 
         /* Mobile Adjustments */
@@ -227,6 +250,13 @@ def get_main_styles():
             font-weight: 600; /* Bolder */
             font-family: 'Montserrat', sans-serif;
             line-height: 1.2;
+        }
+
+        /* Standard Section Spacer */
+        .section-spacer {
+            height: 2px;
+            width: 100%;
+            background: transparent;
         }
         
         /* Responsive Adjustments (Keeping existing logic but refining) */

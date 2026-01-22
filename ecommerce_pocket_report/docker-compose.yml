@@ -4,11 +4,19 @@ services:
     container_name: gwm-pocket-report
     ports:
       - "8501:8501"
-    restart: on-failure
+    restart: "no"
     environment:
       - TZ=America/Sao_Paulo
-    command: >
-      streamlit run app.py
-      --server.port=8501
-      --server.address=0.0.0.0
-      --server.baseUrlPath=ecommerce_pocket_report
+    # volumes:
+    #   - ./:/app
+
+  nginx:
+    image: nginx:alpine
+    container_name: gwm-nginx
+    ports:
+      - "80:80"
+    volumes:
+      - ./nginx.conf:/etc/nginx/nginx.conf:ro
+    depends_on:
+      - pocket-report
+    restart: always

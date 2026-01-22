@@ -26,7 +26,7 @@ def get_db_client():
         st.error(f"Failed to connect to database: {e}")
         return None
 
-@st.cache_data(ttl=900)
+@st.cache_data(ttl=450)
 def get_vehicle_options():
     """Fetch unique vehicle options from the database"""
     client = get_db_client()
@@ -78,7 +78,7 @@ def get_vehicle_options():
             "TANK Pocket Report"
         ]
 
-@st.cache_data(ttl=900)
+@st.cache_data(ttl=450)
 def get_month_options():
     """Fetch unique month options from the database formatted as Mon/YY"""
     client = get_db_client()
@@ -112,7 +112,7 @@ def get_month_options():
         # Fallback
         return ["Jan/24", "Feb/24", "Mar/24", "Apr/24", "May/24", "Jun/24"]
 
-@st.cache_data(ttl=900)
+@st.cache_data(ttl=450)
 def get_vehicle_families(vehicle_name):
     """Fetch vehicle families for a specific vehicle"""
     client = get_db_client()
@@ -141,7 +141,7 @@ def get_vehicle_families(vehicle_name):
              return ['H6 Hev2', 'H6 PHev19', 'H6 PHvev35', 'H6 GT']
         return []
 
-@st.cache_data(ttl=900)
+@st.cache_data(ttl=450)
 def get_summary_data(vehicle_name, month_str, models):
     """
     Fetch summary KPI data for the given vehicle and month.
@@ -231,7 +231,7 @@ def get_summary_data(vehicle_name, month_str, models):
         st.error(f"Error fetching summary data: {e}")
         return summary_data
 
-@st.cache_data(ttl=900)
+@st.cache_data(ttl=450)
 def get_color_data(vehicle_name, month_str, models):
     """
     Fetch total count (Paid + Unpaid + Last 24h) grouped by Exterior Color for each model.
@@ -297,7 +297,7 @@ def get_color_data(vehicle_name, month_str, models):
         st.error(f"Error fetching color data: {e}")
         return color_data
 
-@st.cache_data(ttl=900)
+@st.cache_data(ttl=450)
 def get_daily_data(vehicle_name, month_str, models):
     """
     Fetch total count (Paid + Unpaid + Last 24h) grouped by Date for each model.
@@ -356,7 +356,7 @@ def get_daily_data(vehicle_name, month_str, models):
         st.error(f"Error fetching daily data: {e}")
         return daily_data
 
-@st.cache_data(ttl=900)
+@st.cache_data(ttl=450)
 def get_state_data(vehicle_name, month_str, models):
     """
     Fetch total count (Paid + Unpaid + Last 24h) grouped by Dealer State for each model.
@@ -414,7 +414,7 @@ def get_state_data(vehicle_name, month_str, models):
         st.error(f"Error fetching state data: {e}")
         return state_data
 
-@st.cache_data(ttl=900)
+@st.cache_data(ttl=450)
 def get_dealer_group_data(vehicle_name, month_str, models):
     """
     Fetch total count grouped by Dealer Group for each model.
@@ -472,7 +472,7 @@ def get_dealer_group_data(vehicle_name, month_str, models):
         st.error(f"Error fetching dealer group data: {e}")
         return dealer_data
 
-@st.cache_data(ttl=900)
+@st.cache_data(ttl=450)
 def get_comparison_daily_data(vehicle_name, month_str, family_name, status_filter):
     """
     Fetch daily data for comparison chart.
@@ -527,7 +527,7 @@ def get_comparison_daily_data(vehicle_name, month_str, family_name, status_filte
         st.error(f"Error fetching comparison data: {e}")
         return data
 
-@st.cache_data(ttl=300)
+@st.cache_data(ttl=150)
 def get_last_updated_date():
     """Fetch the maximum date available in the dataset"""
     client = get_db_client()
