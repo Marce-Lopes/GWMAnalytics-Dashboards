@@ -39,14 +39,8 @@ if 'username' not in st.session_state:
 
 # Load page icon
 try:
-    # Try local absolute path first (dev mode)
-    import os
-    if os.path.exists("analytics.png"):
-        icon_path = "analytics.png"
-    else:
-        # Fallback for dev environment with specific path
-        icon_path = r"C:\Users\61000453\Documents\rio_pmo_project\retencao\analytics.png"
-    
+    # Use direct path only as requested
+    icon_path = "analytics.png"
     page_icon = Image.open(icon_path)
 except Exception:
     page_icon = "🚗"
@@ -84,12 +78,7 @@ def main():
     
     with col_center:
         # Load and display image
-        import os
-        if os.path.exists("analytics.png"):
-            img_path = "analytics.png"
-        else:
-            img_path = r"C:\Users\61000453\Documents\rio_pmo_project\retencao\analytics.png"
-            
+        img_path = "analytics.png"
         img_base64 = get_base64_image(img_path)
         
         if img_base64:
@@ -204,90 +193,62 @@ def main():
     # For mobile: single column, for tablet: 2 columns, for desktop: 4 columns
     # Streamlit handles this automatically, but we ensure proper stacking
     
-    # Define grid size - max 3 columns per row for better visibility on all screens
-    # On mobile, these will naturally stack 1 per row.
-    MAX_COLS = 3
-
     # Use columns - they will automatically stack on mobile devices
     if models:
-        # Helper to chunk list
-        def chunked(iterable, n):
-            return [iterable[i:i + n] for i in range(0, len(iterable), n)]
+        # ROW 1: Summary Cards
+        # Create columns for the summary row
+        cols_summary = st.columns(len(models))
+        for idx, model_name in enumerate(models):
+            with cols_summary[idx]:
+                render_model_header_and_summary(model_name, summary_data)
+                st.markdown('<div class="section-spacer"></div>', unsafe_allow_html=True)
 
-        model_chunks = chunked(models, MAX_COLS)
+        # ROW 2: By Color
+        cols_color = st.columns(len(models))
+        for idx, model_name in enumerate(models):
+            with cols_color[idx]:
+                color_html = render_color_table(model_name, color_data)
+                # Combine Header and Table into one HTML block
+                full_color_html = f"""<div style="display: flex; flex-direction: column;">
+<div class='chart-header'>{model_name} by color</div>
+{color_html}
+</div>"""
+                st.markdown(full_color_html, unsafe_allow_html=True)
+                st.markdown('<div class="section-spacer"></div>', unsafe_allow_html=True)
+
+        # ROW 3: By Day
+        cols_day = st.columns(len(models))
+        for idx, model_name in enumerate(models):
+            with cols_day[idx]:
+                st.markdown(f"<div class='chart-header'>{model_name} by day</div>", unsafe_allow_html=True)
+                daily_chart = render_daily_chart(model_name, daily_data)
+                st.plotly_chart(daily_chart, use_container_width=True, config={'displayModeBar': False}, key=f"daily_chart_{idx}")
+                st.markdown('<div class="section-spacer"></div>', unsafe_allow_html=True)
+
+        # ROW 4: By State
+        cols_state = st.columns(len(models))
+        for idx, model_name in enumerate(models):
+            with cols_state[idx]:
+                st.markdown(f"<div class='chart-header'>{model_name} by state</div>", unsafe_allow_html=True)
+                state_map = render_state_map(model_name, state_data)
+                st.plotly_chart(state_map, use_container_width=True, config={'displayModeBar': False}, key=f"state_map_{idx}")
+                st.markdown('<div class="section-spacer"></div>', unsafe_allow_html=True)
+
+        # ROW 5: By Dealer Group
+        cols_dealer = st.columns(len(models))
+        for idx, model_name in enumerate(models):
+            with cols_dealer[idx]:
+                dealer_html = render_dealer_group_table(model_name, dealer_data)
+                full_dealer_html = f"""<div style="display: flex; flex-direction: column;">
+<div class='chart-header'>{model_name} by Dealer Group</div>
+{dealer_html}
+</div>"""
+                st.markdown(full_dealer_html, unsafe_allow_html=True)
+                st.markdown("<div style='margin-bottom: 2rem;'></div>", unsafe_allow_html=True)
         
-        # 0. Summary Section
-        for chunk in model_chunks:
-            cols = st.columns(len(chunk))
-            for idx, model_name in enumerate(chunk):
-                with cols[idx]:
-                    render_model_header_and_summary(model_name, summary_data)
-        
-        # Spacer removed
+        st.markdown("---")
     else:
         st.info("No models found for this selection.")
-
-    # Calculate Total He dynamically from the fetched summary data
-    # Sum of all metrics for all models displayed
-    total_he = 0
-    if summary_data:
-        for model_metrics in summary_data.values():
-            total_he += model_metrics.get('ok_form_without_payment', 0)
-            total_he += model_metrics.get('ok_form_with_payment', 0)
-            total_he += model_metrics.get('9k_last_24_hours', 0)
-
-    # Total He Section - Full Width
-    # total_he is now calculated dynamically above
-    st.markdown(f"""
-        <div class="total-card">
-            <span class="total-value">{format_number(total_he)}</span>
-            <span class="total-label">Total {raw_vehicle}</span>
-        </div>
-        <div style="margin-bottom: 1.5rem;"></div>
-    """, unsafe_allow_html=True)
-    
-    # Detailed sections below - Row by Row alignment
-    if models:
-        # Helper function for grid rendering
-        def render_section_grid(models, section_type):
-            chunks = chunked(models, MAX_COLS)
-            for chunk in chunks:
-                cols = st.columns(len(chunk))
-                for idx, model_name in enumerate(chunk):
-                    with cols[idx]:
-                        if section_type == "color":
-                            st.markdown(f"<div class='chart-header'>{model_name} by color</div>", unsafe_allow_html=True)
-                            color_html = render_color_table(model_name, color_data)
-                            st.markdown(color_html, unsafe_allow_html=True)
-                        elif section_type == "day":
-                            st.markdown(f"<div class='chart-header'>{model_name} by day</div>", unsafe_allow_html=True)
-                            daily_chart = render_daily_chart(model_name, daily_data)
-                            st.plotly_chart(daily_chart, use_container_width=True, config={'displayModeBar': False})
-                        elif section_type == "state":
-                            st.markdown(f"<div class='chart-header'>{model_name} by state</div>", unsafe_allow_html=True)
-                            state_map = render_state_map(model_name, state_data)
-                            st.plotly_chart(state_map, use_container_width=True, config={'displayModeBar': False})
-                        elif section_type == "dealer":
-                            st.markdown(f"<div class='chart-header'>{model_name} by Dealer Group</div>", unsafe_allow_html=True)
-                            dealer_html = render_dealer_group_table(model_name, dealer_data)
-                            st.markdown(dealer_html, unsafe_allow_html=True)
-
-        # 1. By Color Row
-        render_section_grid(models, "color")
-        st.markdown("<div style='margin-bottom: 1.5rem;'></div>", unsafe_allow_html=True)
-
-        # 2. By Day Row
-        render_section_grid(models, "day")
-        st.markdown("<div style='margin-bottom: 1.5rem;'></div>", unsafe_allow_html=True)
-
-        # 3. By State Row
-        render_section_grid(models, "state")
-        st.markdown("<div style='margin-bottom: 1.5rem;'></div>", unsafe_allow_html=True)
-
-        # 4. By Dealer Group Row
-        render_section_grid(models, "dealer")
-                
-        st.markdown("---")
 
     # Comparison Section
     render_comparison_section(raw_vehicle, month_options, models)
