@@ -11,3 +11,4 @@ services:
       streamlit run app.py
       --server.port=8501
       --server.address=0.0.0.0
+      --server.baseUrlPath=ecommerce_pocket_report
