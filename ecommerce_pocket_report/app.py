@@ -15,7 +15,8 @@ from database import (
     get_daily_data,
     get_state_data,
     get_dealer_group_data,
-    get_last_updated_date
+    get_last_updated_date,
+    get_kpi_metrics
 )
 from utils import get_base64_image, format_number
 from styles import get_main_styles, get_header_styles
@@ -24,6 +25,7 @@ from components import (
     render_model_header_and_summary, 
     render_color_table, 
     render_dealer_group_table,
+    render_kpi_section,
     render_comparison_section
 )
 from charts import (
@@ -164,6 +166,10 @@ def main():
     
     # Get raw vehicle name from selection (remove " Pocket Report")
     raw_vehicle = selected_report.replace(" Pocket Report", "")
+
+    # KPI Metrics Section
+    kpi_metrics = get_kpi_metrics(raw_vehicle, selected_month_str)
+    render_kpi_section(kpi_metrics)
     
     # Fetch models/families dynamically based on selection
     models = get_vehicle_families(raw_vehicle)

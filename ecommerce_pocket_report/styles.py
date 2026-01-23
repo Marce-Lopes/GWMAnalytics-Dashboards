@@ -38,7 +38,7 @@ def get_main_styles():
         .model-header {
             /* Kept for reference but specific styles are below */
         }
-
+        
         .summary-card {
             background: transparent !important;
             border: none !important;
@@ -60,7 +60,7 @@ def get_main_styles():
         /* Model Header Specifics */
         .model-header {
             font-family: 'Montserrat', sans-serif !important;
-            background: #2C2C2C !important; /* Premium Dark Grey */
+            background: #1E293B !important; /* Premium Dark Slate Grey */
             color: #FFFFFF !important;
             text-transform: uppercase;
             letter-spacing: 1px;
@@ -77,7 +77,7 @@ def get_main_styles():
         .chart-header {
             font-family: 'Montserrat', sans-serif !important;
             font-weight: 500 !important; /* Medium weight for lighter feel */
-            background: #2C2C2C !important; /* Premium Dark Grey */
+            background: #1E293B !important; /* Premium Dark Slate Grey */
             color: #FFFFFF !important;
             text-align: center !important;
             margin-bottom: 0px !important; /* No gap below */

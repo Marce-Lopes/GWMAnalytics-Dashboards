@@ -1,6 +1,7 @@
 import clickhouse_connect
 import pandas as pd
 import streamlit as st
+from datetime import datetime, timedelta, date
 
 # Database configuration
 
@@ -43,7 +44,7 @@ def get_vehicle_options():
     try:
         # Query to get unique vehicles
         # Filter out values that look like timestamps (containing ':')
-        query = "SELECT DISTINCT Vehicle FROM mart.ecommerce_pocket_report WHERE Vehicle NOT LIKE '%:%' ORDER BY Vehicle"
+        query = "SELECT DISTINCT Vehicle FROM mart.ecommerce_pocket_report WHERE Vehicle NOT LIKE '%:%' ORDER BY Vehicle SETTINGS max_bytes_before_external_group_by = 3000000000"
         result = client.query(query)
         
         # Extract values from result
@@ -95,6 +96,7 @@ def get_month_options():
             toStartOfMonth(Date) as sort_date
         FROM mart.ecommerce_pocket_report 
         ORDER BY sort_date DESC
+        SETTINGS max_bytes_before_external_group_by = 3000000000
         """
         result = client.query(query)
         
@@ -124,7 +126,7 @@ def get_vehicle_families(vehicle_name):
 
     try:
         # Query to get vehicle families
-        query = "SELECT DISTINCT `Vehicle Family` FROM mart.ecommerce_pocket_report WHERE Vehicle = %(vehicle)s ORDER BY `Vehicle Family`"
+        query = "SELECT DISTINCT `Vehicle Family` FROM mart.ecommerce_pocket_report WHERE Vehicle = %(vehicle)s ORDER BY `Vehicle Family` SETTINGS max_bytes_before_external_group_by = 3000000000"
         result = client.query(query, parameters={'vehicle': vehicle_name})
         
         families = [row[0] for row in result.result_rows]
@@ -174,6 +176,7 @@ def get_summary_data(vehicle_name, month_str, models):
         AND Status = 'Invoiced'
         AND Date < today() - 1
         GROUP BY `Vehicle Family`
+        SETTINGS max_bytes_before_external_group_by = 3000000000
         """
         
         # Query 2: 9K Form Without Payment (Status IN ('Not Invoiced', 'Open'))
@@ -186,6 +189,7 @@ def get_summary_data(vehicle_name, month_str, models):
         AND Status IN ('Not Invoiced', 'Open')
         AND Date < today() - 1
         GROUP BY `Vehicle Family`
+        SETTINGS max_bytes_before_external_group_by = 3000000000
         """
         
         # Query 3: 9K Last 24 Hours (Date >= today() - 1)
@@ -195,6 +199,7 @@ def get_summary_data(vehicle_name, month_str, models):
         WHERE Vehicle = %(vehicle)s
         AND Date >= today() - 1
         GROUP BY `Vehicle Family`
+        SETTINGS max_bytes_before_external_group_by = 3000000000
         """
         
         # Execute Query 1
@@ -213,7 +218,7 @@ def get_summary_data(vehicle_name, month_str, models):
                 
         # Execute Query 3 - Only if selected month is current month
         # We query the DB for the current month formatted string to ensure consistency with the filter format
-        current_month_query = "SELECT formatDateTime(today(), '%b/%y')"
+        current_month_query = "SELECT formatDateTime(today(), '%b/%y') SETTINGS max_bytes_before_external_group_by = 3000000000"
         current_month_res = client.query(current_month_query)
         if current_month_res and current_month_res.result_rows:
             current_month_str = current_month_res.result_rows[0][0]
@@ -245,7 +250,7 @@ def get_color_data(vehicle_name, month_str, models):
 
     try:
         # Check if current month to determine if we include Last 24h (which is date-based, not month-based)
-        current_month_query = "SELECT formatDateTime(today(), '%b/%y')"
+        current_month_query = "SELECT formatDateTime(today(), '%b/%y') SETTINGS max_bytes_before_external_group_by = 3000000000"
         current_month_res = client.query(current_month_query)
         is_current_month = False
         if current_month_res and current_month_res.result_rows:
@@ -268,6 +273,7 @@ def get_color_data(vehicle_name, month_str, models):
             )
             GROUP BY `Vehicle Family`, `Exterior Color`
             ORDER BY total DESC
+            SETTINGS max_bytes_before_external_group_by = 3000000000
             """
         else:
             # Past Month Logic:
@@ -280,6 +286,7 @@ def get_color_data(vehicle_name, month_str, models):
             AND Status IN ('Invoiced', 'Not Invoiced', 'Open')
             GROUP BY `Vehicle Family`, `Exterior Color`
             ORDER BY total DESC
+            SETTINGS max_bytes_before_external_group_by = 3000000000
             """
         
         result = client.query(query, parameters={'vehicle': vehicle_name, 'month': month_str})
@@ -309,7 +316,7 @@ def get_daily_data(vehicle_name, month_str, models):
         return daily_data
 
     try:
-        current_month_query = "SELECT formatDateTime(today(), '%b/%y')"
+        current_month_query = "SELECT formatDateTime(today(), '%b/%y') SETTINGS max_bytes_before_external_group_by = 3000000000"
         current_month_res = client.query(current_month_query)
         is_current_month = False
         if current_month_res and current_month_res.result_rows:
@@ -329,6 +336,7 @@ def get_daily_data(vehicle_name, month_str, models):
             )
             GROUP BY `Vehicle Family`, day
             ORDER BY day ASC
+            SETTINGS max_bytes_before_external_group_by = 3000000000
             """
         else:
             query = """
@@ -339,6 +347,7 @@ def get_daily_data(vehicle_name, month_str, models):
             AND Status IN ('Invoiced', 'Not Invoiced', 'Open')
             GROUP BY `Vehicle Family`, day
             ORDER BY day ASC
+            SETTINGS max_bytes_before_external_group_by = 3000000000
             """
         
         result = client.query(query, parameters={'vehicle': vehicle_name, 'month': month_str})
@@ -368,7 +377,7 @@ def get_state_data(vehicle_name, month_str, models):
         return state_data
 
     try:
-        current_month_query = "SELECT formatDateTime(today(), '%b/%y')"
+        current_month_query = "SELECT formatDateTime(today(), '%b/%y') SETTINGS max_bytes_before_external_group_by = 3000000000"
         current_month_res = client.query(current_month_query)
         is_current_month = False
         if current_month_res and current_month_res.result_rows:
@@ -388,6 +397,7 @@ def get_state_data(vehicle_name, month_str, models):
             )
             GROUP BY `Vehicle Family`, `Dealer State`
             ORDER BY total DESC
+            SETTINGS max_bytes_before_external_group_by = 3000000000
             """
         else:
             query = """
@@ -398,6 +408,7 @@ def get_state_data(vehicle_name, month_str, models):
             AND Status IN ('Invoiced', 'Not Invoiced', 'Open')
             GROUP BY `Vehicle Family`, `Dealer State`
             ORDER BY total DESC
+            SETTINGS max_bytes_before_external_group_by = 3000000000
             """
         
         result = client.query(query, parameters={'vehicle': vehicle_name, 'month': month_str})
@@ -426,7 +437,7 @@ def get_dealer_group_data(vehicle_name, month_str, models):
         return dealer_data
 
     try:
-        current_month_query = "SELECT formatDateTime(today(), '%b/%y')"
+        current_month_query = "SELECT formatDateTime(today(), '%b/%y') SETTINGS max_bytes_before_external_group_by = 3000000000"
         current_month_res = client.query(current_month_query)
         is_current_month = False
         if current_month_res and current_month_res.result_rows:
@@ -446,6 +457,7 @@ def get_dealer_group_data(vehicle_name, month_str, models):
             )
             GROUP BY `Vehicle Family`, `Dealer Group Name`
             ORDER BY total DESC
+            SETTINGS max_bytes_before_external_group_by = 3000000000
             """
         else:
             query = """
@@ -456,6 +468,7 @@ def get_dealer_group_data(vehicle_name, month_str, models):
             AND Status IN ('Invoiced', 'Not Invoiced', 'Open')
             GROUP BY `Vehicle Family`, `Dealer Group Name`
             ORDER BY total DESC
+            SETTINGS max_bytes_before_external_group_by = 3000000000
             """
         
         result = client.query(query, parameters={'vehicle': vehicle_name, 'month': month_str})
@@ -511,7 +524,7 @@ def get_comparison_daily_data(vehicle_name, month_str, family_name, status_filte
         else: # Total
             query += " AND Status IN ('Invoiced', 'Not Invoiced', 'Open')"
             
-        query += " GROUP BY day ORDER BY day ASC"
+        query += " GROUP BY day ORDER BY day ASC SETTINGS max_bytes_before_external_group_by = 3000000000"
         
         result = client.query(query, parameters=params)
         
@@ -527,6 +540,189 @@ def get_comparison_daily_data(vehicle_name, month_str, family_name, status_filte
         st.error(f"Error fetching comparison data: {e}")
         return data
 
+@st.cache_data(ttl=450)
+def get_kpi_metrics(selected_vehicle, month_str):
+    """
+    Fetch KPI metrics: Total, vs Last Month, vs Last Year, Share
+    """
+    client = get_db_client()
+    if not client:
+        return {'total': 0, 'prev_total': 0, 'ly_total': 0, 'market_total': 0}
+
+    try:
+        # 1. Date Math
+        current_date = datetime.strptime(month_str, "%b/%y")
+        
+        # Prev Month (First day of current - 1 day -> prev month end -> replace day 1)
+        first_day = current_date.replace(day=1)
+        prev_month_end = first_day - timedelta(days=1)
+        prev_month_date = prev_month_end.replace(day=1)
+        prev_month_str = prev_month_date.strftime("%b/%y")
+        
+        # Last Year
+        try:
+            last_year_date = current_date.replace(year=current_date.year - 1)
+        except ValueError:
+            last_year_date = current_date.replace(year=current_date.year - 1, day=28)
+        last_year_str = last_year_date.strftime("%b/%y")
+        
+        # 2. Check if current month (for current date logic)
+        current_month_query = "SELECT formatDateTime(today(), '%b/%y') SETTINGS max_bytes_before_external_group_by = 3000000000"
+        res = client.query(current_month_query)
+        is_current = False
+        if res and res.result_rows and res.result_rows[0][0] == month_str:
+            is_current = True
+            
+        # 3. Helper for conditions (Hardcoded format string to avoid issues)
+        def get_condition_sql(m_key, is_curr, limit_day=False):
+            base_cond = f"formatDateTime(Date, '%%b/%%y') = %({m_key})s"
+            
+            if is_curr:
+                # Current month logic: Data < today - 1 OR recent data
+                # AND Status filter is applied outside or appended
+                return f"""(
+                    ({base_cond} AND Date < today() - 1)
+                    OR
+                    (Date >= today() - 1)
+                )"""
+            elif limit_day:
+                # Same-day comparison for past periods (e.g. Last Year, Prev Month)
+                # Restrict to days <= today's day number
+                return f"{base_cond} AND toDayOfMonth(Date) <= toDayOfMonth(today())"
+            else:
+                # Full month
+                return base_cond
+
+        # 4. Queries
+        params = {
+            'v': selected_vehicle,
+            'm_curr': month_str,
+            'm_prev': prev_month_str,
+            'm_ly': last_year_str
+        }
+        
+        # Conditions
+        cond_curr = get_condition_sql('m_curr', is_current)
+        # Apply limit_day to prev month if current is partial
+        cond_prev = get_condition_sql('m_prev', False, limit_day=is_current) 
+        cond_ly = get_condition_sql('m_ly', False, limit_day=is_current)
+        
+        # Base Status Filters
+        status_total = "Status IN ('Invoiced', 'Not Invoiced', 'Open')"
+        status_paid = "Status = 'Invoiced'"
+        status_unpaid = "Status IN ('Not Invoiced', 'Open')"
+
+        # Q1: Current Total
+        q1 = f"SELECT sum(Orders) FROM mart.ecommerce_pocket_report WHERE Vehicle = %(v)s AND {cond_curr} AND {status_total} SETTINGS max_bytes_before_external_group_by = 3000000000"
+        res1 = client.query(q1, params)
+        total_curr = res1.result_rows[0][0] if res1.result_rows and res1.result_rows[0][0] else 0
+        
+        # Q2: Prev Month Total
+        q2 = f"SELECT sum(Orders) FROM mart.ecommerce_pocket_report WHERE Vehicle = %(v)s AND {cond_prev} AND {status_total} SETTINGS max_bytes_before_external_group_by = 3000000000"
+        res2 = client.query(q2, params)
+        total_prev = res2.result_rows[0][0] if res2.result_rows and res2.result_rows[0][0] else 0
+        
+        # Q3: Last Year Total
+        q3 = f"SELECT sum(Orders) FROM mart.ecommerce_pocket_report WHERE Vehicle = %(v)s AND {cond_ly} AND {status_total} SETTINGS max_bytes_before_external_group_by = 3000000000"
+        res3 = client.query(q3, params)
+        total_ly = res3.result_rows[0][0] if res3.result_rows and res3.result_rows[0][0] else 0
+        
+        # Q4: Market Total (All Vehicles)
+        q4 = f"SELECT sum(Orders) FROM mart.ecommerce_pocket_report WHERE {cond_curr} AND {status_total} SETTINGS max_bytes_before_external_group_by = 3000000000"
+        res4 = client.query(q4, params)
+        market_total = res4.result_rows[0][0] if res4.result_rows and res4.result_rows[0][0] else 0
+        
+        # --- New KPIs: Paid & Unpaid ---
+        
+        # Q5: Paid Current
+        q5 = f"SELECT sum(Orders) FROM mart.ecommerce_pocket_report WHERE Vehicle = %(v)s AND {cond_curr} AND {status_paid} SETTINGS max_bytes_before_external_group_by = 3000000000"
+        res5 = client.query(q5, params)
+        paid_curr = res5.result_rows[0][0] if res5.result_rows and res5.result_rows[0][0] else 0
+        
+        # Q6: Paid Prev
+        q6 = f"SELECT sum(Orders) FROM mart.ecommerce_pocket_report WHERE Vehicle = %(v)s AND {cond_prev} AND {status_paid} SETTINGS max_bytes_before_external_group_by = 3000000000"
+        res6 = client.query(q6, params)
+        paid_prev = res6.result_rows[0][0] if res6.result_rows and res6.result_rows[0][0] else 0
+        
+        # Q7: Unpaid Current
+        q7 = f"SELECT sum(Orders) FROM mart.ecommerce_pocket_report WHERE Vehicle = %(v)s AND {cond_curr} AND {status_unpaid} SETTINGS max_bytes_before_external_group_by = 3000000000"
+        res7 = client.query(q7, params)
+        unpaid_curr = res7.result_rows[0][0] if res7.result_rows and res7.result_rows[0][0] else 0
+        
+        # Q8: Unpaid Prev
+        q8 = f"SELECT sum(Orders) FROM mart.ecommerce_pocket_report WHERE Vehicle = %(v)s AND {cond_prev} AND {status_unpaid} SETTINGS max_bytes_before_external_group_by = 3000000000"
+        res8 = client.query(q8, params)
+        unpaid_prev = res8.result_rows[0][0] if res8.result_rows and res8.result_rows[0][0] else 0
+
+        # --- New KPI: Weekday Adjusted (Only if is_current) ---
+        weekday_data = None
+        if is_current:
+            try:
+                # Get max date (Today in DB context)
+                q_max = "SELECT max(Date) FROM mart.ecommerce_pocket_report SETTINGS max_bytes_before_external_group_by = 3000000000"
+                res_max = client.query(q_max)
+                if res_max and res_max.result_rows:
+                    db_today = res_max.result_rows[0][0] # date object
+                    
+                    # Today's Val
+                    q_today = f"SELECT sum(Orders) FROM mart.ecommerce_pocket_report WHERE Vehicle = %(v)s AND toDate(Date) = %(d)s AND {status_total} SETTINGS max_bytes_before_external_group_by = 3000000000"
+                    res_today = client.query(q_today, {'v': selected_vehicle, 'd': db_today})
+                    today_val = res_today.result_rows[0][0] if res_today.result_rows and res_today.result_rows[0][0] else 0
+                    
+                    # Calculate Adjusted Date
+                    # n-th weekday of month
+                    day_num = db_today.day
+                    n = (day_num - 1) // 7 + 1
+                    w = db_today.weekday()
+                    
+                    # Find same n-th weekday in prev month
+                    # prev_month_date is already a datetime object (1st of prev month)
+                    
+                    # Helper to find date
+                    def get_nth_weekday_date(year, month, target_weekday, target_n):
+                        c = 0
+                        d = date(year, month, 1)
+                        while d.month == month:
+                            if d.weekday() == target_weekday:
+                                c += 1
+                                if c == target_n:
+                                    return d
+                            d += timedelta(days=1)
+                        return None
+
+                    adj_date = get_nth_weekday_date(prev_month_date.year, prev_month_date.month, w, n)
+                    
+                    if adj_date:
+                        q_adj = f"SELECT sum(Orders) FROM mart.ecommerce_pocket_report WHERE Vehicle = %(v)s AND toDate(Date) = %(d)s AND {status_total} SETTINGS max_bytes_before_external_group_by = 3000000000"
+                        res_adj = client.query(q_adj, {'v': selected_vehicle, 'd': adj_date})
+                        adj_val = res_adj.result_rows[0][0] if res_adj.result_rows and res_adj.result_rows[0][0] else 0
+                        
+                        weekday_data = {
+                            'today_val': float(today_val),
+                            'today_date': db_today,
+                            'adj_val': float(adj_val),
+                            'adj_date': adj_date
+                        }
+            except Exception as e:
+                print(f"Weekday KPI Error: {e}")
+                pass
+        
+        return {
+            'total': float(total_curr),
+            'prev_total': float(total_prev),
+            'ly_total': float(total_ly),
+            'market_total': float(market_total),
+            'paid_curr': float(paid_curr),
+            'paid_prev': float(paid_prev),
+            'unpaid_curr': float(unpaid_curr),
+            'unpaid_prev': float(unpaid_prev),
+            'weekday_data': weekday_data
+        }
+        
+    except Exception as e:
+        st.error(f"Error fetching KPI metrics: {e}")
+        return {'total': 0, 'prev_total': 0, 'ly_total': 0, 'market_total': 0}
+
 @st.cache_data(ttl=150)
 def get_last_updated_date():
     """Fetch the maximum date available in the dataset"""
@@ -535,7 +731,7 @@ def get_last_updated_date():
         return None
         
     try:
-        query = "SELECT max(Date) FROM mart.ecommerce_pocket_report"
+        query = "SELECT max(Date) FROM mart.ecommerce_pocket_report SETTINGS max_bytes_before_external_group_by = 3000000000"
         result = client.query(query)
         if result and result.result_rows:
             return result.result_rows[0][0]

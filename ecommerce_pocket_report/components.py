@@ -213,6 +213,95 @@ def show_login_page():
                 st.error("Invalid username or password")
 
 
+def render_kpi_section(kpi_data):
+        """Render the KPI section with Total, MoM, YoY, Share, Paid, Unpaid, Adjusted"""
+        if not kpi_data:
+            return
+
+        total = kpi_data['total']
+        prev_total = kpi_data['prev_total']
+        ly_total = kpi_data['ly_total']
+        market_total = kpi_data['market_total']
+        
+        # New Metrics
+        paid_curr = kpi_data.get('paid_curr', 0)
+        paid_prev = kpi_data.get('paid_prev', 0)
+        unpaid_curr = kpi_data.get('unpaid_curr', 0)
+        unpaid_prev = kpi_data.get('unpaid_prev', 0)
+        weekday_data = kpi_data.get('weekday_data')
+
+        # Calculations
+        mom = ((total - prev_total) / prev_total * 100) if prev_total > 0 else 0
+        yoy = ((total - ly_total) / ly_total * 100) if ly_total > 0 else 0
+        share = (total / market_total * 100) if market_total > 0 else 0
+        
+        paid_mom = ((paid_curr - paid_prev) / paid_prev * 100) if paid_prev > 0 else 0
+        unpaid_mom = ((unpaid_curr - unpaid_prev) / unpaid_prev * 100) if unpaid_prev > 0 else 0
+
+        # Helper for arrow
+        def get_arrow(val):
+            if val > 0: return "↑", "#34D399" # Emerald-400 (Bright Green)
+            if val < 0: return "↓", "#F87171" # Red-400 (Bright Red)
+            return "-", "#94A3B8" # Slate-400 (Light Grey)
+
+        # Helper for inverse arrow (Growth is Bad, Decline is Good)
+        def get_inverse_arrow(val):
+            if val > 0: return "↑", "#F87171" # Red (Bad)
+            if val < 0: return "↓", "#34D399" # Green (Good)
+            return "-", "#94A3B8" # Slate
+
+        mom_arrow, mom_color = get_arrow(mom)
+        yoy_arrow, yoy_color = get_arrow(yoy)
+        paid_arrow, paid_color = get_arrow(paid_mom)
+        unpaid_arrow, unpaid_color = get_inverse_arrow(unpaid_mom)
+        
+        # Weekday HTML
+        weekday_html = ""
+        if weekday_data:
+            t_val = int(weekday_data['today_val'])
+            a_val = int(weekday_data['adj_val'])
+            
+            # Simple diff indicator
+            diff = t_val - a_val
+            diff_color = "#10B981" if diff > 0 else "#EF4444" if diff < 0 else "#94A3B8"
+            
+            # Using single line to avoid code block rendering
+            weekday_html = f"""<div style="text-align: center;"><div style="font-size: 0.85rem; color: #94A3B8; font-weight: 500; text-transform: uppercase; letter-spacing: 0.5px;">Today vs Adjusted</div><div style="font-size: 1.5rem; font-weight: 600; color: #FFFFFF; font-family: 'Montserrat', sans-serif;">{t_val} <span style="font-size: 0.9rem; color: {diff_color}; font-weight: 500;">(vs {a_val})</span></div></div>"""
+
+        st.markdown(f"""
+<div style="background-color: #1E293B; border-radius: 8px; padding: 1rem 2rem; margin: 2rem 0; border: 1px solid #334155; box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.2); overflow-x: auto;">
+    <div style="display: flex; justify-content: space-between; align-items: center; width: 100%; min-width: max-content;">
+        <div style="text-align: center;">
+            <div style="font-size: 0.85rem; color: #94A3B8; font-weight: 500; text-transform: uppercase; letter-spacing: 0.5px;">Total</div>
+            <div style="font-size: 2rem; font-weight: 700; color: #FFFFFF; font-family: 'Montserrat', sans-serif;">{int(total):,}</div>
+        </div>
+        <div style="text-align: center;">
+            <div style="font-size: 0.85rem; color: #94A3B8; font-weight: 500; text-transform: uppercase; letter-spacing: 0.5px;">% Vs Last Month</div>
+            <div style="font-size: 1.5rem; font-weight: 600; color: {mom_color}; font-family: 'Montserrat', sans-serif;">{mom_arrow} {abs(mom):.1f}%</div>
+        </div>
+        <div style="text-align: center;">
+            <div style="font-size: 0.85rem; color: #94A3B8; font-weight: 500; text-transform: uppercase; letter-spacing: 0.5px;">% Vs Last Year</div>
+            <div style="font-size: 1.5rem; font-weight: 600; color: {yoy_color}; font-family: 'Montserrat', sans-serif;">{yoy_arrow} {abs(yoy):.1f}%</div>
+        </div>
+        <div style="text-align: center;">
+            <div style="font-size: 0.85rem; color: #94A3B8; font-weight: 500; text-transform: uppercase; letter-spacing: 0.5px;">% Share</div>
+            <div style="font-size: 1.5rem; font-weight: 600; color: #3B82F6; font-family: 'Montserrat', sans-serif;">{share:.1f}%</div>
+        </div>
+        <div style="width: 1px; height: 40px; background-color: #334155;"></div>
+        <div style="text-align: center;">
+            <div style="font-size: 0.85rem; color: #94A3B8; font-weight: 500; text-transform: uppercase; letter-spacing: 0.5px;">9K Paid</div>
+            <div style="font-size: 1.5rem; font-weight: 600; color: {paid_color}; font-family: 'Montserrat', sans-serif;">{paid_arrow} {abs(paid_mom):.1f}%</div>
+        </div>
+        <div style="text-align: center;">
+            <div style="font-size: 0.85rem; color: #94A3B8; font-weight: 500; text-transform: uppercase; letter-spacing: 0.5px;">9K Unpaid</div>
+            <div style="font-size: 1.5rem; font-weight: 600; color: {unpaid_color}; font-family: 'Montserrat', sans-serif;">{unpaid_arrow} {abs(unpaid_mom):.1f}%</div>
+        </div>
+        {weekday_html}
+    </div>
+</div>
+""", unsafe_allow_html=True)
+
+
 def render_comparison_section(raw_vehicle, month_options, models):
     """Render the Comparison Chart section"""
     st.markdown("""
